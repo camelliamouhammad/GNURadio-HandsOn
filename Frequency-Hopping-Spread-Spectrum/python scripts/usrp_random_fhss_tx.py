@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 ##################################################
 # GNU Radio Python Flow Graph
-# Title: Frequency Hopping Spread Spectrum (FHSS)
+# Title: Frequency Hopping Spread Spectrum (FHSS) Random Sequence
 # Author: astro
 # Description: This is a demonstartion of FHSS Based on FHSS OOT block for sequence generator
-# Generated: Sat Jan 27 13:27:30 2018
+# Generated: Sat Jan 27 18:23:54 2018
 ##################################################
 
 if __name__ == '__main__':
@@ -29,7 +29,7 @@ from gnuradio import uhd
 from gnuradio.eng_option import eng_option
 from gnuradio.filter import firdes
 from optparse import OptionParser
-import hackfest
+import Spread
 import os
 import pmt
 import random
@@ -38,12 +38,12 @@ import sys
 import time
 
 
-class usrp_fhss_tx(gr.top_block, Qt.QWidget):
+class usrp_random_fhss_tx(gr.top_block, Qt.QWidget):
 
     def __init__(self):
-        gr.top_block.__init__(self, "Frequency Hopping Spread Spectrum (FHSS)")
+        gr.top_block.__init__(self, "Frequency Hopping Spread Spectrum (FHSS) Random Sequence")
         Qt.QWidget.__init__(self)
-        self.setWindowTitle("Frequency Hopping Spread Spectrum (FHSS)")
+        self.setWindowTitle("Frequency Hopping Spread Spectrum (FHSS) Random Sequence")
         try:
             self.setWindowIcon(Qt.QIcon.fromTheme('gnuradio-grc'))
         except:
@@ -60,7 +60,7 @@ class usrp_fhss_tx(gr.top_block, Qt.QWidget):
         self.top_grid_layout = Qt.QGridLayout()
         self.top_layout.addLayout(self.top_grid_layout)
 
-        self.settings = Qt.QSettings("GNU Radio", "usrp_fhss_tx")
+        self.settings = Qt.QSettings("GNU Radio", "usrp_random_fhss_tx")
         self.restoreGeometry(self.settings.value("geometry").toByteArray())
 
         ##################################################
@@ -103,7 +103,6 @@ class usrp_fhss_tx(gr.top_block, Qt.QWidget):
         self.uhd_usrp_sink_0.set_center_freq(freq, 0)
         self.uhd_usrp_sink_0.set_gain(gain, 0)
         self.uhd_usrp_sink_0.set_antenna("TX/RX", 0)
-        self.hackfest_fhss_seq_gen_0 = hackfest.fhss_seq_gen(seed, ch_spacing, nCH)
         self.fft_filter_xxx_0 = filter.fft_filter_ccc(1, (tx_taps), 1)
         self.fft_filter_xxx_0.declare_sample_delay(0)
         self.fft = qtgui.freq_sink_c(
@@ -192,12 +191,13 @@ class usrp_fhss_tx(gr.top_block, Qt.QWidget):
         
         self._Waterfall_win = sip.wrapinstance(self.Waterfall.pyqwidget(), Qt.QWidget)
         self.tab_layout_1.addWidget(self._Waterfall_win)
+        self.Spread_fhss_sequence_generator_0_0 = Spread.fhss_sequence_generator(seed, ch_spacing, nCH)
 
         ##################################################
         # Connections
         ##################################################
-        self.msg_connect((self.blocks_message_strobe_0, 'strobe'), (self.hackfest_fhss_seq_gen_0, 'trig'))    
-        self.msg_connect((self.hackfest_fhss_seq_gen_0, 'seq'), (self.analog_sig_source_x_0_0, 'freq'))    
+        self.msg_connect((self.Spread_fhss_sequence_generator_0_0, 'seq'), (self.analog_sig_source_x_0_0, 'freq'))    
+        self.msg_connect((self.blocks_message_strobe_0, 'strobe'), (self.Spread_fhss_sequence_generator_0_0, 'trig'))    
         self.connect((self.analog_nbfm_tx_0, 0), (self.fft_filter_xxx_0, 0))    
         self.connect((self.analog_sig_source_x_0, 0), (self.analog_nbfm_tx_0, 0))    
         self.connect((self.analog_sig_source_x_0_0, 0), (self.blocks_multiply_xx_0, 0))    
@@ -207,7 +207,7 @@ class usrp_fhss_tx(gr.top_block, Qt.QWidget):
         self.connect((self.fft_filter_xxx_0, 0), (self.blocks_multiply_xx_0, 1))    
 
     def closeEvent(self, event):
-        self.settings = Qt.QSettings("GNU Radio", "usrp_fhss_tx")
+        self.settings = Qt.QSettings("GNU Radio", "usrp_random_fhss_tx")
         self.settings.setValue("geometry", self.saveGeometry())
         event.accept()
 
@@ -226,11 +226,11 @@ class usrp_fhss_tx(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
-        self.analog_sig_source_x_0.set_sampling_freq(self.samp_rate)
-        self.fft.set_frequency_range(0, self.samp_rate)
         self.Waterfall.set_frequency_range(0, self.samp_rate)
-        self.uhd_usrp_sink_0.set_samp_rate(self.samp_rate)
+        self.analog_sig_source_x_0.set_sampling_freq(self.samp_rate)
         self.analog_sig_source_x_0_0.set_sampling_freq(self.samp_rate*self.interp)
+        self.uhd_usrp_sink_0.set_samp_rate(self.samp_rate)
+        self.fft.set_frequency_range(0, self.samp_rate)
 
     def get_interp(self):
         return self.interp
@@ -271,8 +271,8 @@ class usrp_fhss_tx(gr.top_block, Qt.QWidget):
 
     def set_freq(self, freq):
         self.freq = freq
-        self.uhd_usrp_sink_0.set_center_freq(self.freq, 0)
         self.analog_sig_source_x_0_0.set_frequency(self.freq)
+        self.uhd_usrp_sink_0.set_center_freq(self.freq, 0)
 
     def get_ch_spacing(self):
         return self.ch_spacing
@@ -281,7 +281,7 @@ class usrp_fhss_tx(gr.top_block, Qt.QWidget):
         self.ch_spacing = ch_spacing
 
 
-def main(top_block_cls=usrp_fhss_tx, options=None):
+def main(top_block_cls=usrp_random_fhss_tx, options=None):
 
     from distutils.version import StrictVersion
     if StrictVersion(Qt.qVersion()) >= StrictVersion("4.5.0"):
@@ -291,7 +291,7 @@ def main(top_block_cls=usrp_fhss_tx, options=None):
 
     tb = top_block_cls()
     tb.start()
-    tb.setStyleSheetFromFile('/usr/share/gnuradio/themes/alt.qss')
+    tb.setStyleSheetFromFile('/usr/share/gnuradio/themes/projector.qss')
     tb.show()
 
     def quitting():

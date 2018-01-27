@@ -163,4 +163,4 @@ def main(top_block_cls=usrp_packet_encoder_rx, options=None):
 
 
 if __name__ == '__main__':
-main()
+    main()
