@@ -4,7 +4,7 @@
 # GNU Radio Python Flow Graph
 # Title: Usrp Packet Encoder Tx
 # Author: astro
-# Generated: Thu Jan 25 15:43:29 2018
+# Generated: Sat Jan 27 18:34:55 2018
 ##################################################
 
 if __name__ == '__main__':
@@ -162,4 +162,4 @@ def main(top_block_cls=usrp_packet_encoder_tx, options=None):
 
 
 if __name__ == '__main__':
-main()
+    main()
