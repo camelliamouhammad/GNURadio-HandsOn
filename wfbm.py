@@ -5,7 +5,7 @@
 # Title: UHD WBFM Receive
 # Author: Example
 # Description: WBFM Receive
-# Generated: Sat Apr 14 12:18:24 2018
+# Generated: Sat Apr 14 12:37:36 2018
 ##################################################
 
 if __name__ == '__main__':
@@ -38,7 +38,7 @@ from gnuradio import qtgui
 
 class wbfm_rx(gr.top_block, Qt.QWidget):
 
-    def __init__(self, samp_rate=400e3, freq=91.2e6, gain=50):
+    def __init__(self, freq=91.2e6, gain=50, samp_rate=400e3):
         gr.top_block.__init__(self, "UHD WBFM Receive")
         Qt.QWidget.__init__(self)
         self.setWindowTitle("UHD WBFM Receive")
@@ -66,9 +66,9 @@ class wbfm_rx(gr.top_block, Qt.QWidget):
         ##################################################
         # Parameters
         ##################################################
-        self.samp_rate = samp_rate
         self.freq = freq
         self.gain = gain
+        self.samp_rate = samp_rate
 
         ##################################################
         # Variables
@@ -158,16 +158,6 @@ class wbfm_rx(gr.top_block, Qt.QWidget):
         self.settings.setValue("geometry", self.saveGeometry())
         event.accept()
 
-    def get_samp_rate(self):
-        return self.samp_rate
-
-    def set_samp_rate(self, samp_rate):
-        self.samp_rate = samp_rate
-        self.uhd_usrp_source_0.set_samp_rate(self.samp_rate)
-        self.qtgui_sink_x_0_0.set_frequency_range(0, self.samp_rate)
-        self.qtgui_sink_x_0.set_frequency_range(0, self.samp_rate)
-        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.samp_rate, 200e3, 30e3, firdes.WIN_HANN, 6.76))
-
     def get_freq(self):
         return self.freq
 
@@ -183,6 +173,16 @@ class wbfm_rx(gr.top_block, Qt.QWidget):
         self.uhd_usrp_source_0.set_gain(self.gain, 0)
 
 
+    def get_samp_rate(self):
+        return self.samp_rate
+
+    def set_samp_rate(self, samp_rate):
+        self.samp_rate = samp_rate
+        self.uhd_usrp_source_0.set_samp_rate(self.samp_rate)
+        self.qtgui_sink_x_0_0.set_frequency_range(0, self.samp_rate)
+        self.qtgui_sink_x_0.set_frequency_range(0, self.samp_rate)
+        self.low_pass_filter_0.set_taps(firdes.low_pass(1, self.samp_rate, 200e3, 30e3, firdes.WIN_HANN, 6.76))
+
     def get_audio_decim(self):
         return self.audio_decim
 
@@ -194,13 +194,13 @@ def argument_parser():
     description = 'WBFM Receive'
     parser = OptionParser(usage="%prog: [options]", option_class=eng_option, description=description)
     parser.add_option(
+        "-f", "--freq", dest="freq", type="eng_float", default=eng_notation.num_to_str(91.2e6),
+        help="Set Default Frequency [default=%default]")
+    parser.add_option(
+        "-g", "--gain", dest="gain", type="eng_float", default=eng_notation.num_to_str(50),
+        help="Set Set gain in dB (defaults is midpoint) [default=%default]")
+    parser.add_option(
         "-s", "--samp-rate", dest="samp_rate", type="eng_float", default=eng_notation.num_to_str(400e3),
-        help="Set Sample Rate [default=%default]")
-    parser.add_option(
-        "-s", "--freq", dest="freq", type="eng_float", default=eng_notation.num_to_str(91.2e6),
-        help="Set freq_usrp [default=%default]")
-    parser.add_option(
-        "-s", "--gain", dest="gain", type="eng_float", default=eng_notation.num_to_str(50),
         help="Set Sample Rate [default=%default]")
     return parser
 
@@ -215,7 +215,7 @@ def main(top_block_cls=wbfm_rx, options=None):
         Qt.QApplication.setGraphicsSystem(style)
     qapp = Qt.QApplication(sys.argv)
 
-    tb = top_block_cls(samp_rate=options.samp_rate, freq=options.freq, gain=options.gain)
+    tb = top_block_cls(freq=options.freq, gain=options.gain, samp_rate=options.samp_rate)
     tb.start()
     tb.show()
 
